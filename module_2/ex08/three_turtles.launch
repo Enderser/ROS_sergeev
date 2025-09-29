@@ -1,0 +1,32 @@
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        # три окна
+        Node(package='turtlesim', executable='turtlesim_node', name='sim', namespace='turtlesim1'),
+        Node(package='turtlesim', executable='turtlesim_node', name='sim', namespace='turtlesim2'),
+        Node(package='turtlesim', executable='turtlesim_node', name='sim', namespace='turtlesim3'),
+
+        # mimic: turtlesim2 повторяет turtlesim1
+        Node(
+            package='turtlesim',
+            executable='mimic',
+            name='mimic12',
+            remappings=[
+                ('/input/pose', '/turtlesim1/turtle1/pose'),
+                ('/output/cmd_vel', '/turtlesim2/turtle1/cmd_vel'),
+            ]
+        ),
+
+        # mimic: turtlesim3 повторяет turtlesim2
+        Node(
+            package='turtlesim',
+            executable='mimic',
+            name='mimic23',
+            remappings=[
+                ('/input/pose', '/turtlesim2/turtle1/pose'),
+                ('/output/cmd_vel', '/turtlesim3/turtle1/cmd_vel'),
+            ]
+        ),
+    ])
