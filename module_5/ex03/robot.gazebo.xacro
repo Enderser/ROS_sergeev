@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Gazebo material colors -->
+  <gazebo reference="base_link">
+    <material>Gazebo/Blue</material>
+  </gazebo>
+
+  <gazebo reference="left_wheel">
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+  <gazebo reference="right_wheel">
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+  <gazebo reference="caster_wheel">
+    <material>Gazebo/Grey</material>
+  </gazebo>
+
+  <gazebo reference="sensor_tower">
+    <material>Gazebo/Grey</material>
+  </gazebo>
+
+  <!-- Differential Drive Controller - исправленное имя плагина -->
+  <gazebo>
+    <plugin filename="libgz-sim-diff-drive-system.so" name="gz::sim::systems::DiffDrive">
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>1.2</wheel_separation>
+      <wheel_radius>0.3</wheel_radius>
+      <odom_publish_frequency>30</odom_publish_frequency>
+      <topic>cmd_vel</topic>
+    </plugin>
+  </gazebo>
+
+  <!-- ROS Bridge for cmd_vel -->
+  <gazebo>
+    <plugin filename="libgz-sim-bridge-system.so" name="gz::sim::systems::Bridge">
+      <topic>@/model/diff_drive_robot/cmd_vel</topic>
+      <ros_topic>@/cmd_vel</ros_topic>
+      <type>geometry_msgs/msg/Twist</type>
+      <direction>ROS_TO_IGN</direction>
+    </plugin>
+  </gazebo>
+
+  <!-- ROS Bridge for odometry -->
+  <gazebo>
+    <plugin filename="libgz-sim-bridge-system.so" name="gz::sim::systems::Bridge">
+      <topic>@/model/diff_drive_robot/odometry</topic>
+      <ros_topic>@/odom</ros_topic>
+      <type>nav_msgs/msg/Odometry</type>
+      <direction>IGN_TO_ROS</direction>
+    </plugin>
+  </gazebo>
+
+  <!-- ROS Bridge for TF -->
+  <gazebo>
+    <plugin filename="libgz-sim-bridge-system.so" name="gz::sim::systems::Bridge">
+      <topic>@/model/diff_drive_robot/tf</topic>
+      <ros_topic>@/tf</ros_topic>
+      <type>tf2_msgs/msg/TFMessage</type>
+      <direction>IGN_TO_ROS</direction>
+    </plugin>
+  </gazebo>
+
+  <!-- ROS Bridge for joint states -->
+  <gazebo>
+    <plugin filename="libgz-sim-bridge-system.so" name="gz::sim::systems::Bridge">
+      <topic>@/model/diff_drive_robot/joint_state</topic>
+      <ros_topic>@/joint_states</ros_topic>
+      <type>sensor_msgs/msg/JointState</type>
+      <direction>IGN_TO_ROS</direction>
+    </plugin>
+  </gazebo>
+
+</robot>

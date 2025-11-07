@@ -1,0 +1,189 @@
+<?xml version="1.0"?>
+<robot name="diff_drive_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Constants -->
+  <xacro:property name="M_PI" value="3.1415926535897931" />
+
+  <!-- Robot Dimensions -->
+  <xacro:property name="base_radius" value="0.5" />
+  <xacro:property name="base_height" value="1.0" />
+  <xacro:property name="base_mass" value="50.0" />
+  
+  <xacro:property name="wheel_radius" value="0.3" />
+  <xacro:property name="wheel_length" value="0.2" />
+  <xacro:property name="wheel_mass" value="5.0" />
+  <xacro:property name="wheel_y_offset" value="0.6" />
+  <xacro:property name="wheel_z_offset" value="0.1" />
+  
+  <xacro:property name="caster_radius" value="0.1" />
+  <xacro:property name="caster_mass" value="2.0" />
+  <xacro:property name="caster_x_offset" value="0.8" />
+  <xacro:property name="caster_z_offset" value="0.1" />
+  
+  <xacro:property name="tower_height" value="0.8" />
+  <xacro:property name="tower_radius" value="0.1" />
+  <xacro:property name="tower_mass" value="3.0" />
+
+  <!-- Joint Limits -->
+  <xacro:property name="wheel_lower_limit" value="-10.0" />
+  <xacro:property name="wheel_upper_limit" value="10.0" />
+
+  <!-- Colors -->
+  <xacro:property name="blue_color" value="0.0 0.0 0.8 1.0" />
+  <xacro:property name="black_color" value="0.0 0.0 0.0 1.0" />
+  <xacro:property name="gray_color" value="0.7 0.7 0.7 1.0" />
+
+  <!-- Materials -->
+  <material name="blue">
+    <color rgba="${blue_color}" />
+  </material>
+  <material name="black">
+    <color rgba="${black_color}" />
+  </material>
+  <material name="gray">
+    <color rgba="${gray_color}" />
+  </material>
+
+  <!-- Macro for creating a cylinder link -->
+  <xacro:macro name="cylinder_link" params="name radius length mass color xyz:='0 0 0' rpy:='0 0 0'">
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <cylinder length="${length}" radius="${radius}" />
+        </geometry>
+        <material name="${color}" />
+        <origin xyz="${xyz}" rpy="${rpy}" />
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder length="${length}" radius="${radius}" />
+        </geometry>
+        <origin xyz="${xyz}" rpy="${rpy}" />
+      </collision>
+      <inertial>
+        <mass value="${mass}" />
+        <inertia ixx="${mass * (3*radius*radius + length*length) / 12}" 
+                 ixy="0.0" 
+                 ixz="0.0" 
+                 iyy="${mass * (3*radius*radius + length*length) / 12}" 
+                 iyz="0.0" 
+                 izz="${mass * radius*radius / 2}" />
+      </inertial>
+    </link>
+  </xacro:macro>
+
+  <!-- Macro for creating a sphere link -->
+  <xacro:macro name="sphere_link" params="name radius mass color">
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <sphere radius="${radius}" />
+        </geometry>
+        <material name="${color}" />
+      </visual>
+      <collision>
+        <geometry>
+          <sphere radius="${radius}" />
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="${mass}" />
+        <inertia ixx="${2 * mass * radius * radius / 5}" 
+                 ixy="0.0" 
+                 ixz="0.0" 
+                 iyy="${2 * mass * radius * radius / 5}" 
+                 iyz="0.0" 
+                 izz="${2 * mass * radius * radius / 5}" />
+      </inertial>
+    </link>
+  </xacro:macro>
+
+  <!-- Macro for creating a wheel joint -->
+  <xacro:macro name="wheel_joint" params="name parent child xyz">
+    <joint name="${name}" type="continuous">
+      <parent link="${parent}" />
+      <child link="${child}" />
+      <origin xyz="${xyz}" rpy="0 0 0" />
+      <axis xyz="0 1 0" />
+      <limit effort="10.0" velocity="5.0" />
+      <dynamics damping="0.1" friction="0.5" />
+    </joint>
+  </xacro:macro>
+
+  <!-- Macro for creating a fixed joint -->
+  <xacro:macro name="fixed_joint" params="name parent child xyz">
+    <joint name="${name}" type="fixed">
+      <parent link="${parent}" />
+      <child link="${child}" />
+      <origin xyz="${xyz}" rpy="0 0 0" />
+    </joint>
+  </xacro:macro>
+
+  <!-- Base Link -->
+  <xacro:cylinder_link name="base_link" 
+                       radius="${base_radius}" 
+                       length="${base_height}" 
+                       mass="${base_mass}" 
+                       color="blue"
+                       xyz="0 0 ${base_height/2}" />
+
+  <!-- Left Wheel -->
+  <xacro:cylinder_link name="left_wheel" 
+                       radius="${wheel_radius}" 
+                       length="${wheel_length}" 
+                       mass="${wheel_mass}" 
+                       color="black"
+                       rpy="${M_PI/2} 0 0" />
+
+  <!-- Right Wheel -->
+  <xacro:cylinder_link name="right_wheel" 
+                       radius="${wheel_radius}" 
+                       length="${wheel_length}" 
+                       mass="${wheel_mass}" 
+                       color="black"
+                       rpy="${M_PI/2} 0 0" />
+
+  <!-- Caster Wheel -->
+  <xacro:sphere_link name="caster_wheel" 
+                     radius="${caster_radius}" 
+                     mass="${caster_mass}" 
+                     color="gray" />
+
+  <!-- Sensor Tower -->
+  <xacro:cylinder_link name="sensor_tower" 
+                       radius="${tower_radius}" 
+                       length="${tower_height}" 
+                       mass="${tower_mass}" 
+                       color="gray"
+                       xyz="0 0 ${tower_height/2}" />
+
+  <!-- Joints -->
+
+  <!-- Left Wheel Joint -->
+  <xacro:wheel_joint name="left_wheel_joint" 
+                     parent="base_link" 
+                     child="left_wheel" 
+                     xyz="-0.1 ${wheel_y_offset} ${wheel_z_offset}" />
+
+  <!-- Right Wheel Joint -->
+  <xacro:wheel_joint name="right_wheel_joint" 
+                     parent="base_link" 
+                     child="right_wheel" 
+                     xyz="-0.1 -${wheel_y_offset} ${wheel_z_offset}" />
+
+  <!-- Caster Wheel Joint -->
+  <xacro:fixed_joint name="caster_wheel_joint" 
+                     parent="base_link" 
+                     child="caster_wheel" 
+                     xyz="${caster_x_offset} 0 ${caster_z_offset}" />
+
+  <!-- Sensor Tower Joint -->
+  <xacro:fixed_joint name="sensor_tower_joint" 
+                     parent="base_link" 
+                     child="sensor_tower" 
+                     xyz="0 0 ${base_height}" />
+
+  <!-- Gazebo plugins and extensions -->
+  <xacro:include filename="$(find diff_drive_gazebo)/urdf/robot.gazebo.xacro" />
+
+</robot>
