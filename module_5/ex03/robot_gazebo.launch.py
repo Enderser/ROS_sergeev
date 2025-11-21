@@ -78,16 +78,6 @@ def generate_launch_description():
         parameters=[{'use_sim_time': True}]
     )
 
-    # ROS-Gazebo Bridge for joint states (Gazebo -> ROS)
-    joint_states_bridge = Node(
-        package='ros_gz_bridge',
-        executable='parameter_bridge',
-        name='joint_states_bridge',
-        arguments=['/joint_states@sensor_msgs/msg/JointState[gz.msgs.Model'],
-        output='screen',
-        parameters=[{'use_sim_time': True}]
-    )
-
     # RViz2 Node
     rviz_config_file = os.path.join(pkg_path, 'rviz', 'robot_gazebo.rviz')
     rviz_node = Node(
@@ -120,7 +110,7 @@ def generate_launch_description():
     delayed_bridges = RegisterEventHandler(
         event_handler=OnProcessExit(
             target_action=spawn_entity,
-            on_exit=[TimerAction(period=2.0, actions=[cmd_vel_bridge, odom_bridge, joint_states_bridge])],
+            on_exit=[TimerAction(period=2.0, actions=[cmd_vel_bridge, odom_bridge])],
         )
     )
 

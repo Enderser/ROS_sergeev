@@ -4,7 +4,7 @@
   <name>move_to_goal</name>
   <version>1.0.0</version>
   <description>Package for moving turtle to specified goal</description>
-  <maintainer email="you@example.com">Your Name</maintainer>
+  <maintainer email="enderser4@gmail.com">Egor</maintainer>
   <license>Apache-2.0</license>
 
   <depend>rclpy</depend>
